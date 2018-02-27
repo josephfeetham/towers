@@ -1,8 +1,5 @@
 <template>
   <div align="center">
-    <select v-model="solutionIndex" v-if="">
-      <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
-    </select>
     <table>
       <tr>
         <td></td>
@@ -68,6 +65,12 @@
         <td></td>
       </tr>
     </table>
+    <div v-if="towerSolutionsList.length == 0">
+      No solutions for the given inputs, please check for typos
+    </div>
+    <select v-model="solutionIndex" v-if="towerSolutionsList.length > 1">
+      <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
+    </select>
   </div>
 </template>
 
@@ -76,7 +79,7 @@
     name: 'HelloWorld',
     data() {
       return {
-        sides: [4, 5, 2, 2, 1, 2, 1, 2, 2, 4, 4, 2, 2, 1, 2, 1, 2, 3, 3, 4],
+        sides: [3, 3, 1, 2, 2, 2, 1, 4, 4, 2, 3, 3, 1, 3, 2, 2, 2, 3, 1, 2],
         solutionIndex: 0
       }
     },
@@ -160,7 +163,7 @@
         return this.towerSolution ? this.towerSolution[this.solutionIndex] : [[], [], [], [], []];
       }
     },
-    towerSolution: {
+    watch: {
       towerSolutionsList: function (newList) {
         this.solutionIndex = newList[0];
       }
@@ -170,13 +173,27 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  table {
+    border-collapse: collapse;
+  }
+
+  td:first-child, td:last-child, tr:first-child > td, tr:last-child > td {
+    border: none;
+  }
 
   td {
-    width: 20px;
+    padding: 0;
+    border: 1px solid black;
+    width: 30px;
+    height: 30px;
     text-align: center;
   }
 
-  tr {
-    height: 20px;
+  input {
+    width: 25px;
+    height: 25px;
+    border: none;
+    margin: 0 auto;
+    text-align: center;
   }
 </style>

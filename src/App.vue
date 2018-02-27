@@ -1,7 +1,10 @@
 <template>
   <div id="app">
-    <HelloWorld/>
     Join Soccermoms today
+    <br>
+    Page may take several seconds to load as it calculates the possible tower puzzle solutions.
+    Solutions should update instantly after the page is loaded.
+    <HelloWorld/>
   </div>
 </template>
 
