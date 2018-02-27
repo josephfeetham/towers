@@ -1,67 +1,22 @@
 <template>
-  <div align="center">
+  <div align="center" v-if="loaded">
     <table>
       <tr>
         <td></td>
-        <td><input type="number" min="1" max="5" v-model="sides[10]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[11]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[12]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[13]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[14]" number></td>
+        <td v-for="(_, n) in boardSize">
+          <input type="number" min="1" max="5" v-model="sides[n + 2 * boardSize]" number>
+        </td>
         <td></td>
       </tr>
-      <tr>
-        <td><input type="number" min="1" max="5" v-model="sides[0]" number></td>
-        <td>{{ selectedSolution[0][0] }}</td>
-        <td>{{ selectedSolution[0][1] }}</td>
-        <td>{{ selectedSolution[0][2] }}</td>
-        <td>{{ selectedSolution[0][3] }}</td>
-        <td>{{ selectedSolution[0][4] }}</td>
-        <td><input type="number" min="1" max="5" v-model="sides[5]" number></td>
-      </tr>
-      <tr>
-        <td><input type="number" min="1" max="5" v-model="sides[1]" number></td>
-        <td>{{ selectedSolution[1][0] }}</td>
-        <td>{{ selectedSolution[1][1] }}</td>
-        <td>{{ selectedSolution[1][2] }}</td>
-        <td>{{ selectedSolution[1][3] }}</td>
-        <td>{{ selectedSolution[1][4] }}</td>
-        <td><input type="number" min="1" max="5" v-model="sides[6]" number></td>
-      </tr>
-      <tr>
-        <td><input type="number" min="1" max="5" v-model="sides[2]" number></td>
-        <td>{{ selectedSolution[2][0] }}</td>
-        <td>{{ selectedSolution[2][1] }}</td>
-        <td>{{ selectedSolution[2][2] }}</td>
-        <td>{{ selectedSolution[2][3] }}</td>
-        <td>{{ selectedSolution[2][4] }}</td>
-        <td><input type="number" min="1" max="5" v-model="sides[7]" number></td>
-      </tr>
-      <tr>
-        <td><input type="number" min="1" max="5" v-model="sides[3]" number></td>
-        <td>{{ selectedSolution[3][0] }}</td>
-        <td>{{ selectedSolution[3][1] }}</td>
-        <td>{{ selectedSolution[3][2] }}</td>
-        <td>{{ selectedSolution[3][3] }}</td>
-        <td>{{ selectedSolution[3][4] }}</td>
-        <td><input type="number" min="1" max="5" v-model="sides[8]" number></td>
-      </tr>
-      <tr>
-        <td><input type="number" min="1" max="5" v-model="sides[4]" number></td>
-        <td>{{ selectedSolution[4][0] }}</td>
-        <td>{{ selectedSolution[4][1] }}</td>
-        <td>{{ selectedSolution[4][2] }}</td>
-        <td>{{ selectedSolution[4][3] }}</td>
-        <td>{{ selectedSolution[4][4] }}</td>
-        <td><input type="number" min="1" max="5" v-model="sides[9]" number></td>
+      <tr v-for="(_, n) in boardSize">
+        <td><input type="number" min="1" max="5" v-model="sides[n]" number></td>
+        <td v-for="(_, m) in boardSize">{{ selectedSolution[n][m] }}</td>
+        <td><input type="number" min="1" max="5" v-model="sides[n + boardSize]" number></td>
       </tr>
       <tr>
         <td></td>
-        <td><input type="number" min="1" max="5" v-model="sides[15]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[16]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[17]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[18]" number></td>
-        <td><input type="number" min="1" max="5" v-model="sides[19]" number></td>
+        <td v-for="(_, n) in boardSize"><input type="number" min="1" max="5" v-model="sides[n + 3 * boardSize]" number>
+        </td>
         <td></td>
       </tr>
     </table>
@@ -72,6 +27,10 @@
       <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
     </select>
   </div>
+  <div align="center" v-else>
+    Page may take several seconds to load as it calculates the possible tower puzzle solutions.<br>
+    Solutions should update instantly after the page is loaded.
+  </div>
 </template>
 
 <script>
@@ -80,6 +39,9 @@
     data() {
       return {
         sides: [3, 3, 1, 2, 2, 2, 1, 4, 4, 2, 3, 3, 1, 3, 2, 2, 2, 3, 1, 2],
+        boardSize: 5,
+        boards: [],
+        loaded: false,
         solutionIndex: 0
       }
     },
@@ -137,13 +99,8 @@
       }
     },
     computed: {
-      board() {
-        const row = this.pN(5);
-
-        return this.generateBoard(row, 5);
-      },
       towers() {
-        return this.board.reduce((acc, b) => {
+        return this.boards.reduce((acc, b) => {
           const key = [...b.map(this.towerCount), ...b.map((r) => this.towerCount(r.slice().reverse())),
             ...this.transpose(b).map(this.towerCount), ...this.transpose(b).map((r) => this.towerCount(r.slice().reverse()))].join("");
           if (!acc.hasOwnProperty(key)) {
@@ -162,6 +119,13 @@
       selectedSolution() {
         return this.towerSolution ? this.towerSolution[this.solutionIndex] : [[], [], [], [], []];
       }
+    },
+    mounted() {
+      setTimeout(() => {
+        const row = this.pN(this.boardSize);
+        this.boards = this.generateBoard(row, this.boardSize);
+        this.loaded = true;
+      }, 0);
     },
     watch: {
       towerSolutionsList: function (newList) {

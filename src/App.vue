@@ -1,9 +1,8 @@
 <template>
   <div id="app">
-    Join Soccermoms today
+    Join <a href="http://services.runescape.com/m=clan-home/clan/Soccermoms" target="_blank">Soccermoms</a> today for clue luck
     <br>
-    Page may take several seconds to load as it calculates the possible tower puzzle solutions.
-    Solutions should update instantly after the page is loaded.
+    <br>
     <HelloWorld/>
   </div>
 </template>
