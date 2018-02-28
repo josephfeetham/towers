@@ -28,8 +28,8 @@
     </select>
   </div>
   <div align="center" v-else>
-    Page may take several seconds to load as it calculates the possible tower puzzle solutions.<br>
-    Solutions should update instantly after the page is loaded.
+    Page may take several seconds on first load as it calculates the possible tower puzzle solutions.<br>
+    Load times should be faster when revisiting the page.
   </div>
 </template>
 
@@ -40,28 +40,13 @@
       return {
         sides: [3, 3, 1, 2, 2, 2, 1, 4, 4, 2, 3, 3, 1, 3, 2, 2, 2, 3, 1, 2],
         boardSize: 5,
-        boards: [],
+        towersList: {},
+        row: [],
         loaded: false,
         solutionIndex: 0
       }
     },
     methods: {
-      pN(n) {
-        if (n === 1) {
-          return [[1]];
-        } else {
-          const pNminus1 = this.pN(n - 1);
-          const result = [];
-          pNminus1.forEach((r) => {
-            for (let i = 0; i < n; i++) {
-              const newArr = r.slice();
-              newArr.splice(i, 0, n);
-              result.push(newArr);
-            }
-          });
-          return result;
-        }
-      },
       generateBoard(row, n) {
         if (n === 1) {
           return row.map(p => [p]);
@@ -83,6 +68,22 @@
           return result;
         }
       },
+      pN(n) {
+        if (n === 1) {
+          return [[1]];
+        } else {
+          const pNminus1 = this.pN(n - 1);
+          const result = [];
+          pNminus1.forEach((r) => {
+            for (let i = 0; i < n; i++) {
+              const newArr = r.slice();
+              newArr.splice(i, 0, n);
+              result.push(newArr);
+            }
+          });
+          return result;
+        }
+      },
       towerCount(row) {
         let maxHeight = 0;
         let count = 0;
@@ -94,13 +95,8 @@
         }
         return count;
       },
-      transpose(a) {
-        return a[0].map((_, c) => a.map(r => r[c]));
-      }
-    },
-    computed: {
-      towers() {
-        return this.boards.reduce((acc, b) => {
+      towers(boards) {
+        return boards.reduce((acc, b) => {
           const key = [...b.map(this.towerCount), ...b.map((r) => this.towerCount(r.slice().reverse())),
             ...this.transpose(b).map(this.towerCount), ...this.transpose(b).map((r) => this.towerCount(r.slice().reverse()))].join("");
           if (!acc.hasOwnProperty(key)) {
@@ -110,20 +106,53 @@
           return acc;
         }, {});
       },
+      transpose(a) {
+        return a[0].map((_, c) => a.map(r => r[c]));
+      }
+    },
+    computed: {
       towerSolution() {
-        return this.towers[this.sides.join("")];
+        return this.towersList[this.sides.join("")];
       },
       towerSolutionsList() {
         return this.towerSolution ? [...new Array(this.towerSolution.length).keys()] : [];
       },
       selectedSolution() {
-        return this.towerSolution ? this.towerSolution[this.solutionIndex] : [[], [], [], [], []];
+        return this.towerSolution ? this.towerSolution[this.solutionIndex].map((i) => this.row[i]) : [[], [], [], [], []];
       }
     },
     mounted() {
       setTimeout(() => {
-        const row = this.pN(this.boardSize);
-        this.boards = this.generateBoard(row, this.boardSize);
+        this.row = this.pN(this.boardSize);
+        // for efficiency to not recalculate all boards each refresh, store the boards in localstorage
+        // due to size limitations in localstorage, we compress each board into a list of row indices
+        // and encode the board lookup keys in a higher radix to reduce the storage size to ~4 MB
+        if (localStorage && localStorage.hasOwnProperty("towers")) {
+          this.towersList = Object.entries(JSON.parse(localStorage.getItem("towers"))).reduce((acc, [k, v]) => {
+            acc[parseInt(k, 36).toString(6)] = v;
+            return acc;
+          }, {});
+        } else {
+          const towers = this.towers(this.generateBoard(this.row, this.boardSize));
+          const rowLookup = {};
+          for (let i = 0; i < this.row.length; i++) {
+            rowLookup[this.row[i].join("")] = i;
+          }
+          this.towersList = Object.entries(towers).reduce((acc, [k, v]) => {
+            acc[k] = v.map((b) => b.map((r) => rowLookup[r.join("")]));
+            return acc;
+          }, {});
+          try {
+            localStorage.clear();
+            localStorage.setItem("towers", JSON.stringify(Object.entries(towers).reduce((acc, [k, v]) => {
+              acc[parseInt(k, 6).toString(36)] = v.map((b) => b.map((r) => rowLookup[r.join("")]));
+              return acc;
+            }, {})));
+          }
+          catch (error) {
+            console.log(error);
+          }
+        }
         this.loaded = true;
       }, 0);
     },
