@@ -23,9 +23,13 @@
     <div v-if="towerSolutionsList.length == 0">
       No solutions for the given inputs, please check for typos
     </div>
-    <select v-model="solutionIndex" v-if="towerSolutionsList.length > 1">
-      <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
-    </select>
+    <template v-if="towerSolutionsList.length > 1">
+      <select v-model="solutionIndex">
+        <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
+      </select>
+      <br>This puzzle has multiple solutions, but RS only accepts one of them.
+      <br>You may have to try each one for the puzzle to unlock.
+    </template>
   </div>
   <div align="center" v-else>
     Page may take several seconds on first load as it calculates the possible tower puzzle solutions.<br>
