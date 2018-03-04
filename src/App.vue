@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    Join <a href="http://services.runescape.com/m=clan-home/clan/Soccermoms" target="_blank">Soccermoms</a> today for clue luck
+    Join <a href="http://services.runescape.com/m=forum/forums.ws?92,93,752,65939571" target="_blank">Soccermoms</a> today for clue luck
     <br>
     <br>
     <HelloWorld/>
