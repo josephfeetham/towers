@@ -27,8 +27,7 @@
       <select v-model="solutionIndex">
         <option v-for="solution in towerSolutionsList" :value="solution">Solution {{ solution + 1 }}</option>
       </select>
-      <br>This puzzle has multiple solutions, but RS only accepts one of them.
-      <br>You may have to try each one for the puzzle to unlock.
+      <br>This puzzle has multiple solutions
     </template>
   </div>
   <div align="center" v-else>
