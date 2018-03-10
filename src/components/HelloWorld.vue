@@ -1,5 +1,18 @@
 <template>
   <div align="center" v-if="loaded">
+    Click on the numbers on the around the edges to match your tower puzzle
+    <div v-on:paste="pasteHandler" class="pasteBox" v-bind:style="{ 'background-image': 'url(' + imageURL + ')' }">
+      <template v-if="!imageURL">
+        or click here and paste screenshot to automatically fill in the numbers
+      </template>
+    </div>
+    <div v-if="parseFail">
+      Failed to extract numbers from screenshot.
+      <br>
+      Please only include the empty tower puzzle in the screenshot as shown the image below
+      <br>
+      <img src="static/sample screenshot.png" width="150px" height="150px">
+    </div>
     <table>
       <tr>
         <td></td>
@@ -29,6 +42,7 @@
       </select>
       <br>This puzzle has multiple solutions
     </template>
+    <br><br>
   </div>
   <div align="center" v-else>
     Page may take several seconds on first load as it calculates the possible tower puzzle solutions.<br>
@@ -37,6 +51,7 @@
 </template>
 
 <script>
+
   export default {
     name: 'HelloWorld',
     data() {
@@ -46,10 +61,38 @@
         towersList: {},
         row: [],
         loaded: false,
-        solutionIndex: 0
+        solutionIndex: 0,
+        image: null,
+        imageURL: null,
+        parseFail: false
       }
     },
     methods: {
+      pasteHandler(e) {
+        const item = e.clipboardData.items[0];
+        if (item.type.indexOf('image') >= 0) {
+          this.image = item.getAsFile();
+          const reader = new FileReader();
+          reader.addEventListener('load', () => {
+            this.imageURL = reader.result;
+          }, false);
+          reader.readAsDataURL(this.image);
+
+          Tesseract.recognize(this.image, {
+            tessedit_char_whitelist: '12345'
+          }).then((result) => {
+            const numbers = result.text.match(/[1-5]/g);
+            if (numbers && numbers.length === 20) {
+              this.sides = [numbers[5], numbers[7], numbers[9], numbers[11], numbers[13],
+                numbers[6], numbers[8], numbers[10], numbers[12], numbers[14],
+                ...numbers.slice(0, 5), ...numbers.slice(15, 20)];
+              this.parseFail = false;
+            } else {
+              this.parseFail = true;
+            }
+          })
+        }
+      },
       generateBoard(row, n) {
         if (n === 1) {
           return row.map(p => [p]);
@@ -191,5 +234,13 @@
     border: none;
     margin: 0 auto;
     text-align: center;
+  }
+
+  .pasteBox {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 200px;
+    width: 400px;
   }
 </style>
