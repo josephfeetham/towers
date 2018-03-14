@@ -1,19 +1,16 @@
 <template>
   <div id="app">
-    Join <a href="http://services.runescape.com/m=forum/forums.ws?92,93,752,65939571" target="_blank">Soccermoms</a> today for clue luck
-    <br>
-    <br>
-    <HelloWorld/>
+    <Slider/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
+import Slider from './components/Slider'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Slider
   }
 }
 </script>
